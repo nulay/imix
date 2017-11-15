@@ -1,17 +1,38 @@
 <?php
+
 /**
- * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @file
+ * The PHP page that serves all page requests on a Drupal installation.
  *
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
+ * The routines here dispatch control to the appropriate handler, which then
+ * prints the appropriate page.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @package       app
- * @since         CakePHP(tm) v 0.10.0.1076
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * All Drupal code is released under the GNU General Public License.
+ * See COPYRIGHT.txt and LICENSE.txt.
  */
 
-require 'webroot' . DIRECTORY_SEPARATOR . 'index.php';
+require_once './includes/bootstrap.inc';
+drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
+
+$return = menu_execute_active_handler();
+
+// Menu status constants are integers; page content is a string.
+if (is_int($return)) {
+  switch ($return) {
+    case MENU_NOT_FOUND:
+      drupal_not_found();
+      break;
+    case MENU_ACCESS_DENIED:
+      drupal_access_denied();
+      break;
+    case MENU_SITE_OFFLINE:
+      drupal_site_offline();
+      break;
+  }
+}
+elseif (isset($return)) {
+  // Print any value (including an empty string) except NULL or undefined:
+  print theme('page', $return);
+}
+
+drupal_page_footer();

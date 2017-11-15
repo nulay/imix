@@ -1,0 +1,41 @@
+var Class={create:function(){return function(){this.initialize.apply(this, arguments);}}}
+Object.extend = function(d,s){for (var property in s) {d[property] = s[property];}return d;}
+var Slider=Class.create();
+Slider.prototype = {
+    initialize: function(container,arrObj,options){
+        this.cont=container;
+        this.arrObj=arrObj;
+        this.chTime=(options && options.chTime)?options.chTime:3000;
+        this.h=(options && options.h)?options.h:200;
+        this.w=(options && options.w)?options.w:300;
+        this.init();
+    },
+    init:function(){
+        this.curObj=new Object();
+        this.curObj.ind=1;
+        this.conteiner=jQuery('<div style=\'position:relative;width:'+this.w+'px;height:'+this.h+'px;\'>');
+        for(var i=0;i<this.arrObj.length;i++){
+            this.arrObj[i].imEl=jQuery('<span class="contImg" style=\'display:none;\'><a href=\''+this.arrObj[i].link+'\'><img class="imgEl" src=\''+this.arrObj[i].im+'\' width='+this.w+' height='+this.h+' /></a></span>').appendTo(this.conteiner);
+        }
+        this.cont.append(this.conteiner);
+        this.curObj.fonEl=this.arrObj[1].imEl.clone().show();
+        this.fonEl=jQuery('<div style=\'position:absolute;left:0;top:0;width:'+this.w+'px;height:'+this.h+'px;\'>').appendTo(this.conteiner).append(this.curObj.fonEl);
+        this.curObj.curEl=this.arrObj[0].imEl.clone().show();
+        this.curEl=jQuery('<div style=\'position:absolute;left:0;top:0;width:'+this.w+'px;height:'+this.h+'px;\'>').appendTo(this.conteiner).append(this.curObj.curEl);
+        //this.fonEl.
+    },
+    start:function(ind){
+        if(!ind) ind=1;
+        var thisEl=this;
+        this.curObj.curEl.fadeOut(3000, function() {
+            thisEl.curObj.curEl.remove();
+            thisEl.curObj.curEl=thisEl.curObj.fonEl; thisEl.curObj.fonEl=null;
+            thisEl.curEl.append(thisEl.curObj.curEl);
+            if(ind==thisEl.arrObj.length-1) ind=-1;
+            thisEl.curObj.fonEl=thisEl.arrObj[ind+1].imEl.clone().show()
+            thisEl.fonEl.append(thisEl.curObj.fonEl);
+
+            setTimeout(function(){thisEl.start(ind+1)},thisEl.chTime);
+        });
+    }
+}

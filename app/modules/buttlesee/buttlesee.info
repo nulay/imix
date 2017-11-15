@@ -1,0 +1,7 @@
+; $Id:
+name = Buttlesee
+description = buttlesee.
+package = nulayModul
+version = VERSION
+core = 6.x
+

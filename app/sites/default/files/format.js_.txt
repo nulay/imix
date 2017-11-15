@@ -1,0 +1,4 @@
+﻿function formatMany(many){
+//    return (many+"").replace(/(d)(?=(d{3})+(?!d))/g, "$1 ");
+    return (Math.round(many)+"").replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
+}

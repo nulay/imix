@@ -1,0 +1,103 @@
+<?php
+//$_SERVER['DOCUMENT_ROOT'] .
+//require_once 'org/nulay/catalog/nsi/CatalogGoodsDAO.php';
+
+// $Id;
+
+
+//---------------------------------- Страницы Магазина ---------------------------------------- 
+
+//Всюду по Drupal, hook_help () используется, чтобы вывести справку текст наверху страниц. 
+//Некоторые другие части страниц Drupal получают объяснительный текст от этих обработчиков прерываний также.
+//Мы используем это здесь, чтобы иллюстрировать, как добавить текст справки к страницам, которые определяет
+//Ваш модуль.
+
+function announcesale_help($section) {
+	switch ($section) {
+	case 'Catalog':
+		// Вот некоторый текст справки для заказной страницы.
+		return t('Этот текст из метода announcesale_help.');
+	}
+}
+
+function announcesale_theme() {  
+   return array(    			
+	 'announce_categ' => array(  
+	    'file' => 'announcesale.inc',
+	    'arguments' => array('arrCatG' => NULL),	
+        'template' => 'announce-categ',	  	  
+     ),	
+	 'announce_redact' => array(  
+	    'file' => 'announcesale.inc',
+	    'arguments' => array('announceData' => NULL),	
+        'template' => 'announce-redact',	  	  
+     ),		 
+   );
+}
+
+function announcesale_menu() {
+	// $may_cache параметр используется, чтобы разделить пункты меню на две части.
+	// Возвращенные, когда $may_cache истина, должны быть последовательно применимыми 
+	// для текущего пользователя всегда; другие могут измениться или быть определены в 
+	// только определенных путях. У большинства модулей будут excusively кэшируемые пункты меню.
+	$items['announce/listcateg']= array(
+	'title' => t('Частные объявления'),
+	'page callback' => 'announcesale_getCategory',
+	'access arguments' => array('show announcesale'),	
+	'description' => t('Category for announcement of the sale'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'announcesale.inc',	
+	);  
+	$items['announce/announce_categ']= array(
+	'title' => t('Частные объявления'),
+	'page callback' => 'announce_categ',
+	'access arguments' => array('show announcesale'),	
+	'description' => t('Category for announcement of the sale'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'announcesale.inc',	
+	);  
+	$items['announce/createannounce']= array(
+	'title' => t('Редактирование объявления'),
+	'page callback' => 'announce_redact',
+	'access arguments' => array('workInCabinet'),	
+	'description' => t('Category for announcement of the sale'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'announcesale.inc',	
+	);  
+	$items['announce/saveannounce']= array(
+	'title' => t('Сохранение объявления'),
+	'page callback' => 'announce_save_complete',
+	'access arguments' => array('workInCabinet'),	
+	'description' => t('Save announce'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'announcesale.inc',	
+	);  
+	return $items;
+}
+
+/**
+* Implementation of hook_perm().
+*/
+function announcesale_perm() {
+	return array('announcesale admin', 'show announcesale', 'announcesale manager', 'workInCabinet');
+} 
+
+/**
+* A simple page callback.
+*
+* Возвратные вызовы страницы обязаны возвращать всю страницу. 
+* Информационное наполнение тогда обычно выводится через звонок в тему ('страница'), 
+* где система темы тогда окружит информационное наполнение в соответствующих блоках,
+* передвижении, и моделировании.
+*
+* Если Вы не хотите использовать систему темы (например для того, чтобы вывести изображение или XML), 
+* Вы должны напечатать информационное наполнение самостоятельно и не возвратить что-нибудь.
+*/
+
+/**
+* Более сложный возвратный вызов страницы, который берет параметры.
+*
+* В параметрах передают от URL страницы. Они всегда - следующие элементы пути после местоположения страницы. 
+* Из-за этого, если URL страницы перемещен позже, эта функция не должна быть изменена на accomodate перемещение. 
+* Это - хорошая идея всегда обеспечить значения по умолчанию для параметров
+*/

@@ -1,0 +1,7 @@
+; $Id:
+name = Procat
+description = Procat.
+package = nulayModul
+version = VERSION
+core = 6.x
+

@@ -1,0 +1,94 @@
+<?php
+$vars['node']->type="mytest";
+require_once 'game/mytest/mytest.php';
+// $Id: mytest.module,v 1.11 2006/11/07 20:52:58 webchick Exp $
+//---------------------------------- Страницы автомобиля ---------------------------------------- 
+
+//Всюду по Drupal, hook_help () используется, чтобы вывести справку текст наверху страниц. 
+//Некоторые другие части страниц Drupal получают объяснительный текст от этих обработчиков прерываний также.
+//Мы используем это здесь, чтобы иллюстрировать, как добавить текст справки к страницам, которые определяет
+//Ваш модуль.
+
+function mytest_help($section) {
+  switch ($section) {
+    case 'mytestHelp':
+      // Вот некоторый текст справки для заказной страницы.
+      return t('Этот текст из метода mytest_help.');
+  }
+}
+
+ function mytest_menu() {
+  // $may_cache параметр используется, чтобы разделить пункты меню на две части.
+  // Возвращенные, когда $may_cache истина, должны быть последовательно применимыми 
+  // для текущего пользователя всегда; другие могут измениться или быть определены в 
+  // только определенных путях. У большинства модулей будут excusively кэшируемые пункты меню.
+  $items['mytestgamedata'] = array(
+    'title' => 'War Spirit Data',
+    'page callback' => 'mytest_gameData',
+    'access arguments' => array('access content'),
+    'description' => 'War Spirit gameData',
+    'type' => MENU_CALLBACK,   
+  );  
+  $items['mytest'] = array(
+    'title' => 'War Spirit',
+    'page callback' => 'mytest_game',
+    'access arguments' => array('access content'),
+    'description' => 'War Spirit game',
+    'type' => MENU_SUGGESTED_ITEM,   
+  );  
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function mytest_perm() {
+  return array('mytest game', 'view upmytest gaame');
+} 
+
+/**
+ * A simple page callback.
+ *
+ * Возвратные вызовы страницы обязаны возвращать всю страницу. 
+ * Информационное наполнение тогда обычно выводится через звонок в тему ('страница'), 
+ * где система темы тогда окружит информационное наполнение в соответствующих блоках,
+ * передвижении, и моделировании.
+ *
+ * Если Вы не хотите использовать систему темы (например для того, чтобы вывести изображение или XML), 
+ * Вы должны напечатать информационное наполнение самостоятельно и не возвратить что-нибудь.
+ */
+
+ /**
+ * Более сложный возвратный вызов страницы, который берет параметры.
+ *
+ * В параметрах передают от URL страницы. Они всегда - следующие элементы пути после местоположения страницы. 
+ * Из-за этого, если URL страницы перемещен позже, эта функция не должна быть изменена на accomodate перемещение. 
+ * Это - хорошая идея всегда обеспечить значения по умолчанию для параметров
+ */
+
+ function mytest_gameData() {
+    header("Content-type:  text/text; charset=utf-8"); 	
+    switch($_GET['method']){
+       case "getData":getData_myTest($_GET['data']);break;      
+       default: print("{\"error\":\"000\"}");
+   }
+
+//  $list[] = "Alice's number was $alice.";
+//  $list[] = "Bob's number was $bob.";
+//  $list[] = 'The total was '. ($alice + $bob) .'.';
+//  theme('item_list', $list)
+  return null;
+}
+
+function getData_myTest($data){   
+     global $user;    
+     $gameWS=new MyTestSpirit($user);
+     $gameWS->getDatas($data);    
+}
+
+function mytest_game(){   
+   drupal_add_js('modules/mytest/xd_connection.js?2');
+   drupal_add_js('modules/mytest/mytest.js');      
+   $content='<div style="height:100%;"> user_id='.$_GET["user_id"].'<div id="contentFormytest" style="margin:10px auto;"></div></div>';
+   return $content; 
+}

@@ -1,0 +1,147 @@
+<?php  
+// $Id$
+/**
+ * @file
+ * Enables extending tracking.
+ */
+
+
+ function mymod_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#modulhbd":
+      $output = '<p>'.  t("Displays information about site") .'</p>';
+      break;
+  }
+  return $output;
+}
+
+function  mymod_perm() {
+  return array('access mymodul content', 'access administration pages');
+} 
+
+function mymod_menu(){
+     $items['node/add/ajax'] = array(
+        'title' => 'Create content',
+         'page callback' => 'node_add_page',
+         'access callback' => '_node_add_access',
+         'weight' => 1,
+         'file' => 'node.pages.inc',
+     ); 
+}
+
+function mymod_form_alter(&$form, &$form_state, $form_id) {
+  
+  if(isset($form['type']) && $form['type']['#value']=='page' ){
+    $masMGI=menu_get_item();
+   // dsm($masMGI['page_arguments'][1]);
+    //$form['#submit'][] = 'mymod_mysubmit';
+
+    if($masMGI['page_arguments'][1]=='ajax'){
+    
+  // добавить свой обработчик ПОСЛЕ основного
+  $form['#submit'][] = 'mymod_mysubmit';
+
+ // dsm($form);
+  // добавить свой обработчик ПЕРЕД основным
+  //array_unshift($form['#submit'], 'mymod_mysubmit');
+ 
+  // добавить свой обработчик ВМЕСТО основного
+  //$key = array_search('[FORM_ID]_submit', $form['#submit']);
+  //$form['#submit'][$key] = 'mymod_mysubmit';
+ 
+     
+     $form['buttons']['submit'] = array(
+    // И типом Submit (кнопка отправки формы)
+    '#type' => 'submit',
+    // Надпись на кнопке
+    '#value' => 'Сохранить аяксом',   
+    // Элемент AHAH (Аякс в Друпале 6)
+    '#ahah' => array(
+      // Отреагирует на click (событие из JQuery)
+      'event' => 'click',
+      // Путь, куда будет передана заполненная форма
+      'path' => 'node/add/ajax',
+      // Оболочка формы для вывода результата
+      'wrapper' => 'fc-form',
+      // Метод вывода результата (метод JQuery)
+      'method' => 'append',
+      // Эффект JQuery для применения вывода
+      'effect' => 'fade',
+      // Вид прогрессбара
+      'progress' => array('type' => 'throbber'),       
+    ),
+  );
+
+    }
+   
+ 
+  }
+
+  if (isset($form['type']) && isset($form['#node']) &&
+     $form['type']['#value'] .'_node_form' == $form_id && mymod_perm()){
+      // $form['revision_information'];
+       echo  "ПРивет Это гет";
+       //$form['dfs']=arg(0);
+       global $user;
+         dsm($form);
+       
+         
+
+       $form['comment_settings']['#prefix']='<div style="display:none;">';
+       $form['comment_settings']['#suffix']='</div>';
+
+       $form['revision_information']['#prefix']='<div style="display:none;">';
+       $form['revision_information']['#suffix']='</div>';
+       
+       $form['author']['#prefix']='<div style="display:none;">';
+       $form['author']['#suffix']='</div>';
+
+       $form['options']['#prefix']='<div style="display:none;">';
+       $form['options']['#suffix']='</div>';
+
+       $form['menu']['#prefix']='<div style="display:none;">';
+       $form['menu']['#suffix']='</div>';
+
+       $form['body_field']['format']['#prefix']='<div style="display:none;">';
+       $form['body_field']['format']['#suffix']='</div>';
+     
+       
+       
+       
+  }
+}
+
+function mymod_theme() {
+  echo  "ПРивет Это sет";
+  return array('mymod_info' => array('arguments' => array('form'),),);
+}
+
+function theme_mymod_info($form){
+       echo  "ПРивет Это fет";
+       dsm($form);
+
+       $form['comment_settings']['#prefix']='<div style="display:none;">';
+       $form['comment_settings']['#suffix']='</div>';
+
+       $form['revision_information']['#prefix']='<div style="display:none;">';
+       $form['revision_information']['#suffix']='</div>';
+       
+       $form['author']['#prefix']='<div style="display:none;">';
+       $form['author']['#suffix']='</div>';
+
+       $form['options']['#prefix']='<div style="display:none;">';
+       $form['options']['#suffix']='</div>';
+
+       $form['menu']['#prefix']='<div style="display:none;">';
+       $form['menu']['#suffix']='</div>';
+
+       $form['body_field']['format']['#prefix']='<div style="display:none;">';
+       $form['body_field']['format']['#suffix']='</div>';
+}
+   
+ function mymod_mysubmit(&$form, $form_state){
+   // dsm($form);
+    //echo 'hey!!!!!';
+    exit();
+ }

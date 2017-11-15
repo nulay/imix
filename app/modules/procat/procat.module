@@ -1,0 +1,242 @@
+<?php
+//$_SERVER['DOCUMENT_ROOT'] .
+require_once 'org/nulay/procat/nsi/CategProcatDAO.php';
+
+// $Id;
+
+
+//---------------------------------- Страницы Проката ---------------------------------------- 
+
+//Всюду по Drupal, hook_help () используется, чтобы вывести справку текст наверху страниц. 
+//Некоторые другие части страниц Drupal получают объяснительный текст от этих обработчиков прерываний также.
+//Мы используем это здесь, чтобы иллюстрировать, как добавить текст справки к страницам, которые определяет
+//Ваш модуль.
+
+function procat_help($section) {
+	switch ($section) {
+	case 'Procat':
+		// Вот некоторый текст справки для заказной страницы.
+		return t('Этот текст из метода procat_help.');
+	}
+}
+
+function procat_theme() {  
+  return array(       
+     'page_listcateg_procat' => array(  
+         'arguments' => array('procatCateg' => NULL),
+         'template' => 'page-listcateg-procat',	  
+    ),	
+    'procat_manager_createGoods' => array(  
+         'arguments' => array('procatCateg' => NULL, 'procatData' => NULL),		 
+         'template' => 'procat-manager-createGoods',	  
+    ),
+    'procat_registration' => array(  
+	  'file' => 'user.room.inc',
+	  'arguments' => array('shopData' => NULL),	
+      'template' => 'procat-registration',	  	  
+    ),
+    'redact_item_procat' => array(             
+	  'file' => 'procat.goods.inc',
+	  'arguments' => array('itemShop' => NULL),
+      'template' => 'redact-item-procat',	  	  
+    ),	
+	'redact_procat' => array(             
+	  'file' => 'procat.goods.inc',
+	  'arguments' => array('listShop' => NULL),
+      'template' => 'redact-procat',	  	  
+    ),
+	'manager_redactgoods' => array(             
+	  'file' => 'procat.goods.inc',
+	  'arguments' => array('procatCateg' => NULL),
+      'template' => 'manager-redactgoods',	  	  
+    ),
+	'item_goods_pager' => array(
+      'arguments' => array('urlRoot' => NULL, 'sC'=>NULL),        
+	  'file' => 'catalog.goods.inc',
+      'template' => 'item-goods-pager',	  	  
+    ),
+	'procat_item_goods' => array(
+      'arguments' => array('itemGoods'=>NULL),        
+	  'file' => 'catalog.goods.inc',
+      'template' => 'procat-item-goods',	  	  
+    ), 
+	'procat_listgoods' => array(
+      'arguments' => array('itemGoods'=>NULL),        
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('titleListG' => NULL, 'listItTh'=>NULL, 'numPage'=>NULL),  
+      'template' => 'procat-listgoods',	  	  
+    ), 
+	'procat_concretGoods' => array(
+      'arguments' => array('itemGoods'=>NULL),        
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('goods'=>NULL),  
+      'template' => 'procat-concretGoods',	  	  
+    ), 
+  );
+}
+
+function procat_menu() {
+	// $may_cache параметр используется, чтобы разделить пункты меню на две части.
+	// Возвращенные, когда $may_cache истина, должны быть последовательно применимыми 
+	// для текущего пользователя всегда; другие могут измениться или быть определены в 
+	// только определенных путях. У большинства модулей будут excusively кэшируемые пункты меню.	
+	$items['procat/category']= array(
+	  'title' => t(''),
+	  'page callback' => 'procat_getListCategory',
+	  'access arguments' => array('procat user'),	
+	  'description' => t('Ic list category procat'),
+	  'type' => MENU_CALLBACK, 
+	); 	
+	$items['procat/manager/createGoods']= array(
+	  'title' => t(''),
+	  'page callback' => 'procat_manager_createGoods',
+	  'access arguments' => array('procat manager'),	
+	  'description' => t('Ic manager create goods'),
+	  'type' => MENU_CALLBACK, 
+	  'file' => 'procat.goods.inc',  
+	); 	
+	$items['procat/manager/createGoods/complete']= array(
+	  'title' => t(''),
+	  'page callback' => 'procat_manager_createGoods_complete',
+	  'access arguments' => array('procat manager'),	
+	  'description' => t('Ic manager create goods'),
+	  'type' => MENU_CALLBACK, 
+	  'file' => 'procat.goods.inc',  
+	); 	
+	$items['procat/manager/controlProcat']= array(
+	'title' => t('Управление прокатами'),
+	'page callback' => 'procat_manager_controlProcat',
+	'access arguments' => array('procat manager'),
+	'description' => t('Управление прокатами'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'procat.goods.inc',  
+	); 
+	$items['procat/manager/redactgoods/%']= array(
+	  'title' => t('Управление товарами проката'),
+	  'page arguments' => array(3),
+	  'page callback' => 'procat_manager_redactgoods',
+	  'access arguments' => array('procat manager'),
+	  'description' => t('Управление товарами проката'),
+	  'type' => MENU_SUGGESTED_ITEM, 
+      'file' => 'procat.goods.inc',  
+	); 
+	$items['procat/manager/rgdata']= array(
+	  'title' => t('Управление товарами проката'),	  
+	  'page callback' => 'procat_manager_rgdata',
+	  'access arguments' => array('procat manager'),
+	  'description' => t('Управление товарами проката'),
+	  'type' => MENU_SUGGESTED_ITEM, 
+      'file' => 'procat.goods.inc',  
+	); 	
+	$items['procat/manager/rgdatach']= array(
+	  'title' => t('Управление товарами проката'),
+	  'page callback' => 'procat_manager_rgdatach',
+	  'access arguments' => array('procat manager'),
+	  'description' => t('Управление товарами проката'),
+	  'type' => MENU_SUGGESTED_ITEM, 
+      'file' => 'procat.goods.inc',  
+	);
+	$items['procat/manager/savegoodsimg']= array(
+	  'title' => t('Сохранить изображение'),
+	  'page callback' => 'procat_manager_savegoodsimg',
+	  'access arguments' => array('procat manager'),
+	  'description' => t('Сохранить изображение'),
+	  'type' => MENU_SUGGESTED_ITEM, 
+      'file' => 'procat.goods.inc',  
+	);
+	$items['procat/registrationchange/%']= array(
+	  'title' => t('Изменение информации о прокате'),
+	  'page arguments' => array(2),
+	  'page callback' => 'procat_registrationchange',
+	  'access arguments' => array('procat manager'),	
+	  'description' => t('Ic procat registration change'),
+	  'type' => MENU_SUGGESTED_ITEM, 
+      'file' => 'user.room.inc',  
+	);
+	$items['procat/registration']= array(
+	  'title' => t('Регистрация проката'),
+	  'page callback' => 'procat_registration',
+	  'access arguments' => array('procat auth user'),	
+	  'description' => t('Ic procat registration'),
+	  'type' => MENU_SUGGESTED_ITEM, 
+      'file' => 'user.room.inc',  
+	);
+	$items['procat/registration/complete']= array(
+	  'title' => t('Регистрация проката'),
+	  'page callback' => 'procat_registration',
+	  'access arguments' => array('procat auth user'),	
+	  'description' => t('Ic procat registration'),
+	  'type' => MENU_SUGGESTED_ITEM, 
+      'file' => 'user.room.inc',  
+	);	
+	$items['procat/registrationcompl']= array(
+	'title' => t('Регистрация проката'),
+	'page callback' => 'procat_registrationcompl',
+	'access arguments' => array('procat auth user'),	
+	'description' => t('Ic procat registration'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'user.room.inc',  
+	);	
+	
+	$items['procat/list/goods/%']= array(
+	  'title' => t('Список товаров'),
+	  'page callback' => 'procat_list_goods',
+	  'page arguments' => array(3),
+	  'access arguments' => array('procat user'),
+	  'description' => t('Список товаров'),
+	  'type' => MENU_SUGGESTED_ITEM, 
+      'file' => 'procat.goods.inc',  
+	);
+	$items['procat/concretGoods/%']= array(
+	  'title' => t('Описание товара'),
+	  'page callback' => 'procat_concretGoods',
+	  'page arguments' => array(2),
+	  'access arguments' => array('procat user'),
+	  'description' => t('Описание товара'),
+	  'type' => MENU_SUGGESTED_ITEM, 
+      'file' => 'procat.goods.inc',  
+	);
+	
+	
+	return $items;
+}
+
+/**
+* Implementation of hook_perm().
+*/
+function procat_perm() {
+	return array('procat admin', 'procat user', 'procat manager', 'procat auth user');
+} 
+
+/**
+* A simple page callback.
+*
+* Возвратные вызовы страницы обязаны возвращать всю страницу. 
+* Информационное наполнение тогда обычно выводится через звонок в тему ('страница'), 
+* где система темы тогда окружит информационное наполнение в соответствующих блоках,
+* передвижении, и моделировании.
+*
+* Если Вы не хотите использовать систему темы (например для того, чтобы вывести изображение или XML), 
+* Вы должны напечатать информационное наполнение самостоятельно и не возвратить что-нибудь.
+*/
+
+/**
+* Более сложный возвратный вызов страницы, который берет параметры.
+*
+* В параметрах передают от URL страницы. Они всегда - следующие элементы пути после местоположения страницы. 
+* Из-за этого, если URL страницы перемещен позже, эта функция не должна быть изменена на accomodate перемещение. 
+* Это - хорошая идея всегда обеспечить значения по умолчанию для параметров
+*/
+
+function procat_getListCategory(){	
+	$catProcat=new CategProcatDAO();
+	$arrCatP=$catProcat->getListType();
+	return theme('page_listcateg_procat',$arrCatP);
+}	
+
+
+
+//http://www.micro-system.org/
+//http://news.yandex.ru/yandsearch?showdups=1&catnews=4&rpt=nnews2&within=7
+//http://zoom.cnews.ru
+//http://texnomaniya.ru/

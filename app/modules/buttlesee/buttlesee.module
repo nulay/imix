@@ -1,0 +1,390 @@
+<?php
+//$_SERVER['DOCUMENT_ROOT'] .
+
+// $Id;
+
+
+//---------------------------------- Страницы Проката ---------------------------------------- 
+
+//Всюду по Drupal, hook_help () используется, чтобы вывести справку текст наверху страниц. 
+//Некоторые другие части страниц Drupal получают объяснительный текст от этих обработчиков прерываний также.
+//Мы используем это здесь, чтобы иллюстрировать, как добавить текст справки к страницам, которые определяет
+//Ваш модуль.
+
+function buttlesee_help($section) {
+	switch ($section) {
+	case 'buttlesee':
+		// Вот некоторый текст справки для заказной страницы.
+		return t('Этот текст из метода buttlesee_help.');
+	}
+}
+
+function buttlesee_theme() {    
+	return array('games_buttlesee' => array(
+	'arguments' => array('itemGoods'=>NULL),        
+	'file' => 'catalog.goods.inc',
+	'arguments' => array('goods'=>NULL),  
+	'template' => 'games-buttlesee',	  	  
+	), 
+	);
+}
+
+function buttlesee_menu() {
+	// $may_cache параметр используется, чтобы разделить пункты меню на две части.
+	// Возвращенные, когда $may_cache истина, должны быть последовательно применимыми 
+	// для текущего пользователя всегда; другие могут измениться или быть определены в 
+	// только определенных путях. У большинства модулей будут excusively кэшируемые пункты меню.	
+	$items['games/buttlesee']= array(
+	'title' => t(''),
+	'page callback' => 'buttlesee_games',
+	'access arguments' => array('buttlesee user'),	
+	'description' => t('Ic list category procat'),
+	'type' => MENU_CALLBACK, 
+	); 		
+	$items['games/rgdatach']= array(
+	'title' => t(''),
+	'page callback' => 'buttlesee_rgdatach',
+	'access arguments' => array('buttlesee user'),	
+	'description' => t('Ic list category procat'),
+	'type' => MENU_CALLBACK, 
+	); 	
+	
+	
+	return $items;
+}
+
+function buttlesee_games(){
+    drupal_add_css(drupal_get_path('module', 'catalog') .'/css/jquery-ui-1.7.3.custom.css', 'module');  
+    drupal_add_js(drupal_get_path('module', 'buttlesee') .'/js/jquery.json-2.3.min.js', 'module'); 		
+	drupal_add_js(drupal_get_path('module', 'catalog') .'/js/jquery-ui-1.8.20.custom.min.js', 'module'); 
+	return theme('games_buttlesee');
+}
+
+/**
+* Implementation of hook_perm().
+*/
+function buttlesee_perm() {	
+	return array('buttlesee admin', 'buttlesee user');
+} 
+
+/**
+* A simple page callback.
+*
+* Возвратные вызовы страницы обязаны возвращать всю страницу. 
+* Информационное наполнение тогда обычно выводится через звонок в тему ('страница'), 
+* где система темы тогда окружит информационное наполнение в соответствующих блоках,
+* передвижении, и моделировании.
+*
+* Если Вы не хотите использовать систему темы (например для того, чтобы вывести изображение или XML), 
+* Вы должны напечатать информационное наполнение самостоятельно и не возвратить что-нибудь.
+*/
+
+/**
+* Более сложный возвратный вызов страницы, который берет параметры.
+*
+* В параметрах передают от URL страницы. Они всегда - следующие элементы пути после местоположения страницы. 
+* Из-за этого, если URL страницы перемещен позже, эта функция не должна быть изменена на accomodate перемещение. 
+* Это - хорошая идея всегда обеспечить значения по умолчанию для параметров
+*/
+
+function buttlesee_rgdatach(){   
+	if(isset($_REQUEST['meth'])) $sC->meth=$_REQUEST['meth'];
+	//if(isset($_REQUEST['id'])) $sC->id=$_REQUEST['id'];	
+	
+	//$prD=new ProcatDAO();
+	global $user;
+		
+	//createGame
+	if($sC->meth=='createGame'){
+	    $sql='INSERT INTO {ngb_gamebs} (type) VALUES (1)';
+        $result=db_query($sql);
+		$resultG = db_last_insert_id("ngb_gamebs","id");
+		
+	    $sql='INSERT INTO {ngb_placelist} (uid, name, place,idgame) VALUES (%d,"%s","%s",%d)';
+        $result=db_query($sql,$user->uid,$user->name,$_REQUEST['dataplace'],$resultG);
+		$result = db_last_insert_id("ngb_placelist","id");
+		
+		echo $resultG;
+	}
+	
+	if($sC->meth=='connectGet'){
+	    if(isset($_REQUEST['id'])) $gameId=$_REQUEST['id'];
+		$sql='SELECT count(*) FROM {ngb_placelist} WHERE idgame=%d';
+	    $result=db_query($sql, $gameId);
+        $count=db_result($result); 
+		if($count==2) echo 'true';
+		else echo 'false';
+		return null;
+	}
+	
+	if($sC->meth=='whoturn'){
+	    if(isset($_REQUEST['gameId'])) $gameId=$_REQUEST['gameId'];
+	    $uid=getWhoTurn($gameId);
+		if($uid!=$user->uid) echo 'false';
+		else echo 'true'; 
+		return null;
+	}
+	
+	if($sC->meth=='getpuh'){
+	    if(isset($_REQUEST['gameId'])) $gameId=$_REQUEST['gameId'];
+	    $sql='SELECT np.hit, ng.uid, np.id FROM {ngb_gamebs} ng JOIN {ngb_placelist} np on np.idgame=ng.id  WHERE ng.id=%d AND np.uid=%d'; 
+		$result=db_query($sql, $gameId, $user->uid);
+		$place=db_fetch_array($result);	
+        if($place[uid]==null){
+		   $place[uid]=getWhoTurn($gameId);
+        }		
+		if($place[hit]==null){
+           $hitAr=array();
+		   $hitAr[arr]=array();
+		   $hitAr[lastHit]=0;
+		   $hitAr[shipDead]=0;
+        }else{
+		   $hitAr=json_decode($place[hit],true); 
+        }	
+		$cha=count($hitAr[arr]);
+		if($cha==$hitAr[lastHit] && $place[uid]!=$user->uid){echo 'false'; return null;}
+		if($place[uid]==$user->uid){
+		    $placeRes[myhit]='true';   
+        }	
+		if($hitAr[lastHit]<$cha){
+		     $resArr=array();
+			 for($i=$hitAr[lastHit];$i<$cha;$i++){
+			    $resArr[]=$hitAr[arr][$i];
+			 }
+			 $hitAr[lastHit]=$cha;
+			 $sql='UPDATE {ngb_placelist} SET hit="%s" WHERE id=%d';
+		     db_query($sql, json_encode($hitAr), $place[id]);
+		}
+		$placeRes[hit]=$resArr;
+		echo json_encode($placeRes);
+		return null;
+	}
+	
+	if($sC->meth=='puh'){
+	    if(isset($_REQUEST['gameId'])) $gameId=$_REQUEST['gameId'];
+	    if(isset($_REQUEST['gameId'])) $pos=$_REQUEST['pos'];		
+		$uid=getWhoTurn($gameId);		
+		if($uid!=$user->uid){echo 'false'; return null;}
+		echo doHit($gameId, $pos);
+		return null;
+	}
+	if($sC->meth=='connectToGame'){
+	    if(isset($_REQUEST['gameId'])) $id=$_REQUEST['gameId'];
+	    $sql='SELECT count(*) FROM {ngb_placelist} WHERE idgame=%d';
+	    $result=db_query($sql, $id);
+        $count=db_result($result); 
+		if($count!=1){
+		   echo 'false';
+		}else{
+	       $sql='INSERT INTO {ngb_placelist} (uid, name, place, idgame) VALUES (%d,"%s","%s",%d)';
+           $result=db_query($sql,$user->uid,$user->name,$_REQUEST['dataplace'],$id);
+		   $result = db_last_insert_id("ngb_placelist","id");
+		   
+		   $sql='UPDATE {ngb_gamebs} SET type=2 WHERE id=%d';
+		   db_query($sql,$id);		  
+		   echo 'true';
+		}        
+	}	
+	if($sC->meth=='getOpenGame'){
+		$sql='SELECT pl.id, pl.name, pl.idgame FROM {ngb_placelist} pl JOIN {ngb_gamebs} lg on pl.idgame=lg.id WHERE lg.type=1';
+		$result=db_query($sql);
+		$arr=array();
+	    while ($obj = db_fetch_array($result)) {
+	     	$arr[]=$obj;
+	    }		
+		echo json_encode($arr);
+	}
+	if($sC->meth=='getGame'){
+	    $sql='SELECT pl.*, lg.type FROM {ngb_placelist} pl LEFT JOIN {ngb_gamebs} lg on pl.idgame=lg.id WHERE ((lg.type=1 OR lg.type=2) OR ISNULL(pl.idgame)) AND (pl.uid=%d)';
+		$result=db_query($sql, $user->uid);
+		$arr=array();
+	    while ($obj = db_fetch_array($result)) {
+	     	$arr[]=$obj;
+	    }	
+        $data->uid=$user->uid;	
+		$data->name=$user->name;	
+		$data->arrG=$arr;
+		echo json_encode($data);
+	}
+	
+	if($sC->meth=='getDataPlace'){
+	   if(isset($_REQUEST['id'])) $id=$_REQUEST['id'];
+	   
+	}
+	if($sC->meth=='canccreateGame'){
+	   if(isset($_REQUEST['gameId'])) $id=$_REQUEST['gameId'];
+	   $sql='SELECT count(*) FROM {ngb_placelist} WHERE idgame=%d';
+	   $result=db_query($sql, $id);
+       $count=db_result($result);      
+	   if($count>1){
+	       echo 'false';
+	   }else{	      
+		  $sql='DELETE FROM {ngb_placelist} WHERE uid=%d AND idgame=%d';
+		  db_query($sql, $user->uid, $id);
+		  if(db_affected_rows()>0){
+              $sql='DELETE FROM {ngb_gamebs} WHERE id=%d';
+		      db_query($sql, $id);
+			  echo 'true';
+          }else{
+		     echo 'false';
+		  }		  
+	   }
+	}
+	
+	
+	//echo json_encode('error');	
+	return null;
+}
+//type 1-create; 2-start game; 3-end game - ?;
+
+function getListArrayDDd($result){
+	$arr=array();
+	while ($obj = db_fetch_array($result)) {
+		$arr[]=$obj;
+	}
+	return $arr;
+}
+
+//return user uid who turn
+function getWhoTurn($gameId){
+		//получаем ход
+		$sql='SELECT uid FROM {ngb_gamebs} WHERE id=%d';
+		$result=db_query($sql,$gameId); 
+		$res=db_result($result);
+		//если пользователь установлен, то возвращаем.
+		if($res!=null) return $res;
+		//Устанавливаем пользователя		
+		   $r=rand(0,1);
+		   
+		   $sql='SELECT uid FROM {ngb_placelist} WHERE idgame=%d';
+		   $result=db_query($sql,$gameId);
+		   $arr=array();
+	       while ($obj = db_fetch_array($result)) {
+	         	$arr[]=$obj;
+	       }	
+           $sql='UPDATE {ngb_gamebs} SET uid=%d WHERE id=%d';		   
+		   $result=db_query($sql,$arr[$r][uid],$gameId);
+		   return $arr[$r][uid];
+}
+
+//проверка попадания и запись данных и хода.
+function doHit($gameId, $pos){
+    global $user;
+    $sql='SELECT * FROM {ngb_placelist} WHERE idgame=%d';
+	$result=db_query($sql,$gameId);		 
+	while ($obj = db_fetch_array($result)) {        
+	   	if($obj[uid]==$user->uid) $mobj=$obj; else $eobj=$obj;
+	}	
+    $typehit=hitempty($mobj,$eobj,$pos);		
+	$nHit[pos]=$pos;
+	$nHit[typehit]=$typehit;	
+	if($eobj[hit]==null){           
+		   $hitAr[arr]=array();
+		   $hitAr[lastHit]=0;
+		   $hitAr[shipDead]=0;
+        }else{
+		   $hitAr=json_decode($eobj[hit],true); 
+        }			
+	$hitAr[arr][]=$nHit;
+	//переход к другому игроку
+	if($typehit!=4 & $typehit!=5){
+           $sql='UPDATE {ngb_gamebs} SET uid=%d WHERE id=%d';
+	       $result=db_query($sql, $eobj[uid], $gameId);
+    }	
+    //помечаем количество подбитых кораблей
+	if($typehit==5) $hitAr[shipDead]++;
+	$sql='UPDATE {ngb_placelist} SET hit="%s" WHERE id=%d';
+	db_query($sql, json_encode($hitAr), $eobj[Id]);		
+    return $typehit;	
+}
+
+//попадание во врага 
+function hitempty(&$mobj,&$eobj,$pos){    
+    decodePlace($eobj);
+	decodePlace($mobj);		
+    switch($eobj[place][$pos[i]][$pos[y]]){
+        case 0: $typehit=3; break;
+	    case 1: $typehit=4; break;
+		default: $typehit=0;
+    }		
+	$eobj[place][$pos[i]][$pos[y]]=$typehit;
+	$mobj[plgame][$pos[i]][$pos[y]]=$typehit;
+	$arrG=array();
+	prArr($pos,$arrG);
+	if($typehit==4 && !shipBuh($eobj[place],$pos,$arrG)) $typehit=5;
+    encodePlace($eobj);
+	encodePlace($mobj);			
+	savePlace($eobj);
+	savePlace($mobj);	
+	return $typehit;
+}
+
+//корабль взорван
+function shipBuh($place,$pos,&$arr){   	
+	//if(prArr($pos,$arr)) return false;
+    if($pos[i]!=0){	   
+	   $posN[i]=$pos[i]-1;
+	   $posN[y]=$pos[y];	   
+	   if(prArr2($place,$posN,$arr)) return true;
+	}
+	
+    if($pos[i]!=9){	   
+	   $posN[i]=$pos[i]+1;
+	   $posN[y]=$pos[y];
+	   if(prArr2($place,$posN,$arr)) return true;
+	}
+
+	if($pos[y]!=0){	   
+	   $posN[i]=$pos[i];
+	   $posN[y]=$pos[y]-1;
+	   if(prArr2($place,$posN,$arr)) return true;
+	}
+	
+	if($pos[y]!=9){	   
+	   $posN[i]=$pos[i];
+	   $posN[y]=$pos[y]+1;
+	   if(prArr2($place,$posN,$arr)) return true;
+	}	
+	return false;
+}
+
+//проверяем что находится возле этой точки и вокруг нее.
+function prArr2($place,$pos,&$arr){
+    if(prArr($pos,$arr)) return false;
+    if($place[$pos[i]][$pos[y]]==1) 
+	    return true; 
+	else 
+		if($place[$pos[i]][$pos[y]]==4) 
+			 return shipBuh($place,$pos,$arr);  
+	return false;		 
+}
+
+//проверяем нету ли в нашем массиве уже этой точки чтобы не проверять 2 раза.
+function prArr($pos,&$arr){
+  for($i=0;$i<count($arr);$i++){
+     if($arr[$i]==$pos) return true;
+  }
+  $arr[]=$pos;
+  return false;
+}
+
+function decodePlace(&$obj){
+   $obj[place]=json_decode($obj[place]);
+   $obj[plgame]=json_decode($obj[plgame]);
+}
+
+function encodePlace(&$obj){
+   $obj[place]=json_encode($obj[place]);
+   $obj[plgame]=json_encode($obj[plgame]);
+}
+
+function savePlace($obj){
+    $sql='UPDATE {ngb_placelist} SET place="%s", plgame="%s" WHERE id=%d';
+	db_query($sql,$obj[place],$obj[plgame],$obj[Id]); 	
+}
+
+
+//http://www.micro-system.org/
+//http://news.yandex.ru/yandsearch?showdups=1&catnews=4&rpt=nnews2&within=7
+//http://zoom.cnews.ru
+//http://texnomaniya.ru/

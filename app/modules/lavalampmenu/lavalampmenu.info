@@ -1,0 +1,7 @@
+; $Id:
+name = Lavalampmenu
+description = lavalampmenu.
+package = nulayModul
+version = VERSION
+core = 6.x
+

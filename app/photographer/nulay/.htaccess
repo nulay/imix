@@ -1,0 +1,7 @@
+
+RewriteEngine on
+
+RewriteCond %{HTTP_HOST} ^photo\.phinc\.ru$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.photo\.phinc\.ru$
+RewriteRule ^/?$ "http\:\/\/phinc\.ru\/node\/41" [R=301,L]
+

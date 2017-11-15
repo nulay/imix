@@ -1,0 +1,7 @@
+; $Id:
+name = Announcesale
+description = Announcesale.
+package = nulayModul
+version = VERSION
+core = 6.x
+

@@ -1,0 +1,85 @@
+var idd=0;
+function getIdd(){
+    return ''+idd++;
+}
+var opt=new Object();opt.folderImage="/scripts/NulayTree/tree";
+var opt2=new Object(); opt2.folderImage="/scripts/NulayTree/tree";opt2.aAsChild=true;
+var nulTree=new NulayTree(opt);
+var nulTree2=new NulayTree(opt);
+var nulTree3=new NulayTree(opt);
+var nulTree4=new NulayTree(opt2);
+var nulTree5=new NulayTree(opt);
+var nulTree6=new NulayTree(opt);
+
+function startExamp(){
+    var firstTree=new TreeNode(new Element('span').insert('Это элемент - '+getIdd()));
+    firstTree.insert(new TreeNode(new Element('span').insert('Это элемент - '+getIdd())));
+    firstTree.insert(new TreeNode(new Element('span').insert('Это элемент - '+getIdd())));
+    var twoTree=new TreeNode(new Element('span').insert('Это элемент - '+getIdd()));
+    firstTree.insert(twoTree);
+    twoTree.insert(new TreeNode(new Element('span').insert('Это элемент - '+getIdd())));
+
+    $('tree').insert(nulTree.treeElement);
+    nulTree.setModel(firstTree);
+
+    nulTree2.setChecked(true);
+    $('tree2').insert(nulTree2.treeElement);
+    nulTree2.setModel(firstTree);
+
+    nulTree3.removeImage(true);
+    $('tree3').insert(nulTree3.treeElement);
+    nulTree3.setModel(firstTree);
+
+    var firstTree2=new TreeNode(new Element('span').insert('Это элемент - '+getIdd()),false);
+    firstTree2.insert(new TreeNode(new Element('span').insert('Это элемент - '+getIdd()),false));
+    firstTree2.insert(new TreeNode(new Element('span').insert('Это элемент - '+getIdd()),true));
+    var twoTree2=new TreeNode(new Element('span').insert('Это элемент - '+getIdd()), false);
+    firstTree2.insert(twoTree2);
+    twoTree2.insert(new TreeNode(new Element('span').insert('Это элемент - '+getIdd()),true));
+
+    $('tree4').insert(nulTree4.treeElement);
+    nulTree4.setModel(firstTree2);
+
+    $('tree5').insert(nulTree5.treeElement);
+    nulTree5.setChecked(true);
+    nulTree5.setModel(firstTree2);
+
+    var firstTree3=new TreeNode(new Element('span').insert('Это элемент - '+getIdd()),false);
+    firstTree3.insert(new TreeNode(new Element('span',{onclick:'load(2)'}).insert('Документация'),false));
+    firstTree3.insert(new TreeNode(new Element('span',{onclick:'load(0)'}).insert('Станица загрузки библиотеки'),true));
+    var twoTree3=new TreeNode(new Element('span').insert('Это элемент - '+getIdd()), false);
+    firstTree3.insert(twoTree3);
+    twoTree3.insert(new TreeNode(new Element('span',{onclick:'load(3)'}).insert('О авторе'),true));
+    twoTree3.insert(new TreeNode(new Element('span',{onclick:'location.href="http://yandex.ru"'}).insert('Переход на yandex.ru'),true));
+    twoTree3.insert(new TreeNode(new Element('span',{onclick:'grayPanel();'}).insert('Сделать цвет фона серым (белым)'),true));
+
+    $('tree6').insert(nulTree6.treeElement);
+    nulTree6.setModel(firstTree3);
+}
+
+function grayPanel(){
+    if(document.bgColor=='#ffffff' || document.bgColor=='white')
+        document.bgColor='#d3d3d3';
+    else
+        document.bgColor='#ffffff';
+}
+
+function add2(){
+    var vd=nulTree4.getSelectedElement();
+    if(!vd) return alert('таблица не имеет выделенного узла');
+    nulTree4.getSelectedElement().insert(new TreeNode(new Element('span').insert('Это новый элемент - '+getIdd())));
+}
+
+function removeEl(){
+    var vd=nulTree4.getSelectedElement();
+    if(!vd) return alert('таблица не имеет выделенного узла');
+    nulTree4.getSelectedElement().remove();
+}
+
+function removeAllSelected(){
+    var vd=nulTree5.getCheckedElement();
+    if(vd==null && vd.length==0) return alert('таблица не имеет выделенного узла');
+    for(var i=0;i<vd.length;i++){
+        vd[i].remove();
+    }
+}
