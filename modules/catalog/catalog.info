@@ -1,0 +1,7 @@
+; $Id:
+name = Catalog
+description = Catalog.
+package = nulayModul
+version = VERSION
+core = 6.x
+

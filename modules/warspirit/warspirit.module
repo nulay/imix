@@ -1,0 +1,192 @@
+<?php
+require_once 'game/warspirit/game.php';
+// $Id: warspirit.module,v 1.11 2006/11/07 20:52:58 webchick Exp $
+
+
+//---------------------------------- Страницы автомобиля ---------------------------------------- 
+
+//Всюду по Drupal, hook_help () используется, чтобы вывести справку текст наверху страниц. 
+//Некоторые другие части страниц Drupal получают объяснительный текст от этих обработчиков прерываний также.
+//Мы используем это здесь, чтобы иллюстрировать, как добавить текст справки к страницам, которые определяет
+//Ваш модуль.
+
+function warspirit_help($section) {
+  switch ($section) {
+    case 'WarspiritHelp':
+      // Вот некоторый текст справки для заказной страницы.
+      return t('Этот текст из метода warspirit_help.');
+  }
+}
+
+ function warspirit_menu() {
+
+
+  // $may_cache параметр используется, чтобы разделить пункты меню на две части.
+  // Возвращенные, когда $may_cache истина, должны быть последовательно применимыми 
+  // для текущего пользователя всегда; другие могут измениться или быть определены в 
+  // только определенных путях. У большинства модулей будут excusively кэшируемые пункты меню.
+  $items['warspiritgamedata'] = array(
+    'title' => 'War Spirit Data',
+    'page callback' => 'warspirit_gameData',
+    'access arguments' => array('access content'),
+    'description' => 'War Spirit gameData',
+    'type' => MENU_CALLBACK,   
+  );  
+  $items['warspirit'] = array(
+    'title' => 'War Spirit',
+    'page callback' => 'warspirit_game',
+    'access arguments' => array('access content'),
+    'description' => 'War Spirit game',
+    'type' => MENU_SUGGESTED_ITEM,   
+  ); 
+  $items['parse/startparse']= array(
+	'title' => t('StartPars'),
+	'page callback' => 'startParse',
+	'access arguments' => array('access content'),	
+	'description' => t('Ic start parse'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'parse.startparse.inc',
+	);
+  $items['parse/startparse/anekdot']= array(
+	'title' => t('Start parse anekdots'),
+	'page callback' => 'startParseAnekdot',
+	'access arguments' => array('access content'),	
+	'description' => t('Ic start parse anekdots'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'parse.startparse.inc',
+	);   
+  $items['parse/startparse/anekdotvk']= array(
+	'title' => t('Start parse anekdotvk'),
+	'page callback' => 'startParseAnekdotFromVK',
+	'access arguments' => array('access content'),	
+	'description' => t('Ic start parse anekdotvk'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'parse.mod.inc',
+	);
+  $items['parse/startparse/anekdotvk2']= array(
+	'title' => t('Start parse anekdotvk2'),
+	'page callback' => 'startParseAnekdotFromVK2',
+	'access arguments' => array('access content'),	
+	'description' => t('Ic start parse anekdotvk2'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'parse.mod.inc',
+	);     
+  $items['parse/saveanekdot']= array(
+	'title' => t('Save anekdot'),
+	'page callback' => 'saveAnekdot',
+	'access arguments' => array('access content'),	
+	'description' => t('Ic save anekdot'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'parse.mod.inc',
+	);   
+  $items['parse/startparse/afisha']= array(
+	'title' => t('Start parse afisha'),
+	'page callback' => 'startParseAfisha',
+	'access arguments' => array('access content'),	
+	'description' => t('Ic start parse afisha'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'parse.startparse.inc',
+	);  
+    $items['parse/parse/parseIPage']= array(
+	'title' => t(''),
+	'page callback' => 'parseIPage',
+	'access arguments' => array('access content'),	
+	'description' => t('Ic html'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'parse.startparse.inc',
+	);  	
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function warspirit_perm() {
+  return array('warspirit game', 'view upwarspirit gaame');
+} 
+
+/**
+ * A simple page callback.
+ *
+ * Возвратные вызовы страницы обязаны возвращать всю страницу. 
+ * Информационное наполнение тогда обычно выводится через звонок в тему ('страница'), 
+ * где система темы тогда окружит информационное наполнение в соответствующих блоках,
+ * передвижении, и моделировании.
+ *
+ * Если Вы не хотите использовать систему темы (например для того, чтобы вывести изображение или XML), 
+ * Вы должны напечатать информационное наполнение самостоятельно и не возвратить что-нибудь.
+ */
+
+ /**
+ * Более сложный возвратный вызов страницы, который берет параметры.
+ *
+ * В параметрах передают от URL страницы. Они всегда - следующие элементы пути после местоположения страницы. 
+ * Из-за этого, если URL страницы перемещен позже, эта функция не должна быть изменена на accomodate перемещение. 
+ * Это - хорошая идея всегда обеспечить значения по умолчанию для параметров
+ */
+
+ function warspirit_gameData() {
+    header("Content-type:  text/text; charset=utf-8");  
+    switch($_GET['method']){
+       case "getData":getData($_GET['data']);break;      
+       default: print("{\"error\":\"000\"}");
+   }
+
+//  $list[] = "Alice's number was $alice.";
+//  $list[] = "Bob's number was $bob.";
+//  $list[] = 'The total was '. ($alice + $bob) .'.';
+//  theme('item_list', $list)
+  return null;
+}
+
+function getData($data){   
+     global $user;    
+     $gameWS=new GameWarSpirit($user);
+     $gameWS->getData($data);    
+}
+
+function printAutoModel($marka_id){
+    $query = "SELECT * FROM {auto_model} WHERE marka_id=%d";   
+    $queryResult = db_query($query,$marka_id);
+    print("<listAutoModel>");
+    while ($links = db_fetch_object($queryResult)) {
+       print("<autoModel>");
+           print('<vid>'.$links->vid.'</vid>');
+           print('<name>'.$links->name.'</name>');
+           print('<model_id>'.$links->model_id.'</model_id>');
+       print("</autoModel>");
+    }
+    print("</listAutoModel>");
+}
+
+function printAutoBodyType(){
+    $query = "SELECT * FROM {auto_bodyType}";
+    $queryResult = db_query($query);
+    print("<listBodyType>");
+    while ($links = db_fetch_object($queryResult)) {
+       print("<autoBodyType>");
+       print('<vid>'.$links->vid.'</vid>');
+       print('<name>'.$links->name.'</name>');
+	   print("</autoBodyType>");
+    }
+    print("</listBodyType>");
+}
+
+function printAutoTransmission(){
+    $query = "SELECT * FROM {auto_transmission}";
+    $queryResult = db_query($query);
+    print("<listAutoTransm>");
+    while ($links = db_fetch_object($queryResult)) {
+       print("<autoTransm>");
+       print('<vid>'.$links->vid.'</vid>');
+       print('<name>'.$links->name.'</name>');
+	   print("</autoTransm>");
+    }
+    print("</listAutoTransm>");
+}
+
+function warspirit_game(){   
+   drupal_add_js('modules/warspirit/warspirit.js');  
+   $content='<div style="height:100%;"><div id="contentForWarSpirit" style="margin:10px auto;"></div></div><script type="text/javascript" >jQuery(document).ready(function() {var warSpirit=new WarSpiritGame();});</script>';
+   return $content; 
+}

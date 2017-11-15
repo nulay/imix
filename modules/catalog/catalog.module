@@ -1,0 +1,555 @@
+<?php
+//$_SERVER['DOCUMENT_ROOT'] .
+require_once 'org/nulay/catalog/nsi/CatalogGoodsDAO.php';
+
+// $Id;
+
+
+//---------------------------------- Страницы Магазина ---------------------------------------- 
+
+//Всюду по Drupal, hook_help () используется, чтобы вывести справку текст наверху страниц. 
+//Некоторые другие части страниц Drupal получают объяснительный текст от этих обработчиков прерываний также.
+//Мы используем это здесь, чтобы иллюстрировать, как добавить текст справки к страницам, которые определяет
+//Ваш модуль.
+
+function catalog_help($section) {
+	switch ($section) {
+	case 'Catalog':
+		// Вот некоторый текст справки для заказной страницы.
+		return t('Этот текст из метода catalog_help.');
+	}
+}
+
+function catalog_theme() {  
+  return array(    
+	'title_goods' => array(
+      'arguments' => array('titleArr' => NULL,'urlData' => NULL),        
+	  'file' => 'catalog.goods.inc',
+      'template' => 'title-goods',	  	  
+    ),
+	'item_goods' => array(
+      'arguments' => array('itemGoods' => NULL),        
+	  'file' => 'catalog.goods.inc',
+      'template' => 'item-goods',	  	  
+    ),
+	'item_goods_pager' => array(
+      'arguments' => array('urlRoot' => NULL, 'sC'=>NULL),        
+	  'file' => 'catalog.goods.inc',
+      'template' => 'item-goods-pager',	  	  
+    ),
+	'page_listGoods' => array(
+      'arguments' => array('titleListG' => NULL,'arrayItemGoods' => 0,'numPage'=>0),        
+	  'file' => 'catalog.goods.inc',
+      'template' => 'page-listGoods',	  	  
+    ),
+	'page_listAllGoods' => array(
+      'arguments' => array('listCompany' => NULL),        
+	  'file' => 'catalog.goods.inc',
+      'template' => 'page-listAllGoods',	  	  
+    ),
+	'redact_price' => array(             
+	  'file' => 'catalog.goods.inc',
+      'template' => 'redact-price',	  	  
+    ),
+      'noGoodsInSelect' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('titleSort' => ''),
+      'template' => 'noGoodsInSelect',	  	  
+    ),
+      'redact_price_item' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('price' => ''),
+      'template' => 'redact-price-item',	  	  
+    ),
+      'redact_item_shop' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('itemShop' => NULL),
+      'template' => 'redact-item-shop',	  	  
+    ),
+      'redact_shop' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('listShop' => NULL),
+      'template' => 'redact-shop',	  	  
+    ),
+      'critSearch' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('sC' => NULL,'plg' => NULL),
+      'template' => 'critSearch',	  	  
+    ),
+	  'catalog_concretGoods' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('goods' => NULL),
+      'template' => 'catalog-concretGoods',	  	  
+    ),	
+	  'block_shop_goods' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('shops' => NULL),
+      'template' => 'block-shop-goods',	  	  
+    ),		
+	'catalog_shopsGoods' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('shops' => NULL),
+      'template' => 'catalog-shopsGoods',	  	  
+    ),	
+    'catalog_concretShop' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('shop' => NULL),
+      'template' => 'catalog-concretShop',	  	  
+    ),
+	  'catalog_admin_redactGoods' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('res' => NULL),
+      'template' => 'catalog-admin-redactGoods',	  	  
+    ),			
+	'catalog_admin_controlCatalog' => array(             
+	  'file' => 'catalog.goods.inc',
+	  'arguments' => array('categ' => NULL),
+      'template' => 'catalog-admin-controlCatalog',	  	  
+    ),	
+	//'catalog_admin_redactConcreteGoods' => array(             
+	//  'file' => 'catalog.goods.inc',
+	 // 'arguments' => array('data' => NULL),
+    //  'template' => 'catalog-admin-redactConcreteGoods',	  	  
+    //),
+    
+	'user_room' => array(        
+      'file' => 'user.room.inc',
+	  'arguments' => array('userFull' => NULL),	 
+      'template' => 'user-room',	  
+    ),			
+	'user_room_block' => array(  
+      'template' => 'user-room-block',	  	  
+    ),			
+	'shop_registration' => array(  
+	  'file' => 'user.room.inc',
+	  'arguments' => array('shopData' => NULL),	
+      'template' => 'shop-registration',	  	  
+    ),			
+	);
+}
+
+function catalog_menu() {
+	// $may_cache параметр используется, чтобы разделить пункты меню на две части.
+	// Возвращенные, когда $may_cache истина, должны быть последовательно применимыми 
+	// для текущего пользователя всегда; другие могут измениться или быть определены в 
+	// только определенных путях. У большинства модулей будут excusively кэшируемые пункты меню.
+	$items['catalog/concretGoods/%']= array(
+	'title' =>t('Информация о товаре'),// t('Goods info'),
+	'page callback' => 'catalog_getGoods',
+	'access arguments' => array('catalog user'),
+	'page arguments' => array(2),
+	'description' => t('Ic goods'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'catalog.goods.inc',	
+	);  
+	$items['catalog/concretShop/%']= array(
+	'title' => t('Информация о магазине'),//t('Shop info'),
+	'page callback' => 'catalog_concretShop',
+	'access arguments' => array('catalog user'),
+	'page arguments' => array(2),
+	'description' => t('Ic shop'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'catalog.goods.inc',
+	);  	
+	$items['catalog/listGoods']= array(
+	'title' => t('Категории товаров'),//t('List goods'),
+	'page callback' => 'catalog_listGoods',
+	'access arguments' => array('catalog user'),	
+	'description' => t('Ic list goods'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'catalog.goods.inc',
+	);  
+	$items['catalog/listGoodsFull']= array(
+	'title' => t('Полный список товаров'),//t('List full goods'),
+	'page callback' => 'catalog_listfullGoods',
+	'access arguments' => array('catalog user'),	
+	'description' => t('Ic list full goods'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'catalog.goods.inc',
+	);  	
+	$items['catalog/category']= array(
+	'title' => t('Категории товаров'),
+	'page callback' => 'catalog_getListCategory',
+	'access arguments' => array('catalog user'),	
+	'description' => t('Ic list category goods'),
+	'type' => MENU_CALLBACK, 
+	); 	
+	$items['catalog/categorys']= array(
+	'title' => t('Тематические разделы'),
+	'page callback' => 'catalog_getListCategoryByIds',
+	'access arguments' => array('catalog user'),	
+	'description' => t('Ic list category goods'),
+	'type' => MENU_CALLBACK, 
+	); 	
+    $items['catalog/manager/listGoods']= array(
+	'title' => t('Список товаров в конкретных магазинах AJAX'),//t('List shop'),
+	'page callback' => 'catalog_manager_getlistGoods',
+	'access arguments' => array('catalog manager'),
+	'description' => t('Ic list shop'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	); 
+    $items['catalog/manager/redactprice']= array(
+	'title' => t('Редактирование прайса'),//t('List shop'),
+	'page callback' => 'catalog_manager_redactprice',
+	'access arguments' => array('catalog manager'),
+	'description' => t('Ic list shop'),
+	'type' => MENU_SUGGESTED_ITEM, 
+        'file' => 'catalog.goods.inc',  
+	);
+	$items['catalog/manager/listCatalogGoods']= array(
+	'title' => t('Список типов товаров JSON'),
+	'page callback' => 'catalog_manager_listCatalogGoods',
+	'access arguments' => array('catalog manager'),
+	'description' => t(''),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	); 
+	$items['catalog/manager/listCompany']= array(
+	'title' => t(''),
+	'page callback' => 'catalog_manager_listCompany',
+	'access arguments' => array('catalog manager'),
+	'description' => t(''),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	); 
+	$items['catalog/manager/savePrice']= array(
+	'title' => t(''),
+	'page callback' => 'catalog_manager_savePrice',
+	'access arguments' => array('catalog manager'),
+	'description' => t(''),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	); 	
+	$items['catalog/manager/selectShop']= array(
+	'title' => t('Управление магазинами'),
+	'page callback' => 'catalog_manager_selectShop',
+	'access arguments' => array('catalog manager'),
+	'description' => t('Управление магазинами'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	); 
+	$items['catalog/user/selectShop']= array(
+	'title' => t('Управление магазинами'),
+	'page callback' => 'catalog_user_selectShop',
+	'access arguments' => array('catalog user'),
+	'description' => t('Управление магазинами'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	); 
+	$items['catalog/shopsGoods/%']= array(
+	'title' => t('Магазины'),
+	'page callback' => 'catalog_shopsGoods',
+	'access arguments' => array('catalog user'),
+	'page arguments' => array(2),
+	'description' => t('Магазины продающие конкретный товар'),
+	'type' => MENU_SUGGESTED_ITEM,   
+	'file' => 'catalog.goods.inc',
+	); 	
+	//Показ конкретного типа товара т.е. его свойств добавление удаление изменение. 
+	$items['catalog/admin/redactGoods/%/%']= array(
+	'title' => t('Редактирование товаров'),//t('Redact goods'),
+	'page callback' => 'catalog_admin_redactGoods',
+	'access arguments' => array('catalog admin'),
+	'page arguments' => array(3,4),
+	'description' => t('Ic Redact goods'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	);
+	$items['catalog/admin/controlCatalog']= array(
+	'title' => t('Редактирование каталога'),//t('Redact Catalog'),
+	'page callback' => 'catalog_admin_controlCatalog',
+	'access arguments' => array('catalog admin'),
+	'page arguments' => array(3),
+	'description' => t('Ic Redact Category'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	);
+	//Редактирование или создание конкретного товара т.е. например телефона Lg - p698
+	//$items['catalog/admin/redactConcreteGoods']= array(
+	//'title' => t('Redact Catalog'),
+	//'page callback' => 'catalog_admin_redactConcreteGoods',
+	//'access arguments' => array('catalog admin'),
+	//'page arguments' => array(3),
+	//'description' => t('Ic Redact Goods'),
+	//'type' => MENU_SUGGESTED_ITEM, 
+    //'file' => 'catalog.goods.inc',  
+	//);
+	//Сохранение типа товара и его свойств.
+	$items['catalog/admin/changeData']= array(
+	'title' => t('Редактирование каталога'),//t('Redact Catalog'),
+	'page callback' => 'catalog_admin_changeData',
+	'access arguments' => array('catalog admin'),	//???
+	'description' => t('Ic Redact Catalog'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	);	
+	$items['catalog/admin/redactGoods/saveGoods']= array(
+	'title' => t('Сохраняет конкретный товар.'),
+	'page callback' => 'catalog_admin_saveGoods',
+	'access arguments' => array('catalog admin'),
+	'description' => t(''),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'catalog.goods.inc',  
+	); 
+	$items['user/room']= array(
+	'title' => t('Кабинет пользователя'),//t('User room'),
+	'page callback' => 'user_room',
+	'access arguments' => array('workInCabinet'),	
+	'description' => t('Ic user room'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'user.room.inc',  
+	);
+	$items['shop/registration']= array(
+	'title' => t('Регистрация магазина'),
+	'page callback' => 'shop_registration',
+	'access arguments' => array('workInCabinet'),	
+	'description' => t('Ic shop registration'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'user.room.inc',  
+	);
+	$items['shop/registrationcompl']= array(
+	'title' => t('Регистрация магазина'),
+	'page callback' => 'shop_registrationcompl',
+	'access arguments' => array('workInCabinet'),	
+	'description' => t('Ic shop registration'),
+	'type' => MENU_SUGGESTED_ITEM, 
+    'file' => 'user.room.inc',  
+	);	
+	//'page arguments' => array(2),
+	return $items;
+}
+
+/**
+* Implementation of hook_perm().
+*/
+function catalog_perm() {
+	return array('catalog admin', 'catalog user', 'catalog manager', 'workInCabinet');
+} 
+
+/**
+* A simple page callback.
+*
+* Возвратные вызовы страницы обязаны возвращать всю страницу. 
+* Информационное наполнение тогда обычно выводится через звонок в тему ('страница'), 
+* где система темы тогда окружит информационное наполнение в соответствующих блоках,
+* передвижении, и моделировании.
+*
+* Если Вы не хотите использовать систему темы (например для того, чтобы вывести изображение или XML), 
+* Вы должны напечатать информационное наполнение самостоятельно и не возвратить что-нибудь.
+*/
+
+/**
+* Более сложный возвратный вызов страницы, который берет параметры.
+*
+* В параметрах передают от URL страницы. Они всегда - следующие элементы пути после местоположения страницы. 
+* Из-за этого, если URL страницы перемещен позже, эта функция не должна быть изменена на accomodate перемещение. 
+* Это - хорошая идея всегда обеспечить значения по умолчанию для параметров
+*/
+
+function catalog_getListCategory2(){	
+    drupal_add_css(drupal_get_path('module', 'catalog') .'/css/jquery-ui-1.7.3.custom.css', 'module');
+	drupal_add_css(drupal_get_path('module', 'catalog') .'/css/listGoodsCateg.css', 'module');	
+	$catGoods=new CatalogGoodsDAO();
+	$arrCatG=$catGoods->getListTypeGoods();	
+	$output='<div>';
+	$i=0;
+	while ($i < count($arrCatG)) {	  
+	    $cg1=$arrCatG[$i];
+        $i+=1;	
+		$output.='<div class="column1cat ">';
+		$output.='<div class="titleCateg ui-helper-reset ui-state-default ui-corner-all">'.$cg1->value.'</div>';
+		for($y=0;$y<count($cg1->listTypeGoods);$y++){
+            $output.='<div class="nR texMin"><a href="listGoods?id_Catal[]='.$cg1->listTypeGoods[$y]->id.'">'.$cg1->listTypeGoods[$y]->value.'</a></div>';
+        }
+		$output.='</div>';
+	}
+	$output.='</div>';
+	//dpm($arrCatG);
+	return $output;
+}	
+
+function catalog_getListCategory(){
+        drupal_add_css(drupal_get_path('module', 'catalog') .'/css/jquery-ui-1.7.3.custom.css', 'module');
+	drupal_add_css(drupal_get_path('module', 'catalog') .'/css/listGoodsCateg.css', 'module');	
+	
+	$catGoods=new CatalogGoodsDAO();
+	$arrCatG=$catGoods->getListTypeGoods();
+	$output='<table width="100%" style="border-collapse: separate;">';
+	$i=0;
+	while ($i < count($arrCatG)) {	    
+		$cg1=$arrCatG[$i];	
+		//dpm($cg1);
+		$cg2=null;
+		if($i+1<count($arrCatG)) $cg2=$arrCatG[$i+1];
+		$i+=2;			
+		$output.='<tr><td width="50%" style="font-size:x-large;"><div class="titleCateg ui-helper-reset ui-state-default ui-corner-all">'.$cg1->value.'</div></td><td width="50%" style="font-size:x-large;">'.(($cg2->listTypeGoods)?('<div class="titleCateg ui-helper-reset ui-state-default ui-corner-all">'.$cg2->value.'</div>'):'').'</td></tr>';
+		$output.='<tr><td width="50%" style="vertical-align:top;" >';
+		
+		for($y=0;$y<count($cg1->listTypeGoods);$y++){
+			//dpm($cg1.listTypeGoods);
+			$output.='<div class="nR texMin"><div><a href="listGoods?id_Catal[]='.$cg1->listTypeGoods[$y]->id.'">'.$cg1->listTypeGoods[$y]->value.'</a></div></div>';
+		}
+		$output.='</td><td width="50%" style="vertical-align:top;">';
+		if($cg2!=null){
+			for($y=0;$y<count($cg2->listTypeGoods);$y++){
+				$output.='<div class="nR texMin"><div><a href="listGoods?id_Catal[]='.$cg2->listTypeGoods[$y]->id.'">'.$cg2->listTypeGoods[$y]->value.'</a></div></div>';
+			}
+		}
+		$output.='</td></tr><tr><td width="50%" style="font-size:10px;" colspan="2">&nbsp;</td></tr>';
+	}
+	$output.='</table>';
+	//dpm($arrCatG);
+	return $output;
+}
+
+function catalog_getListCategoryByIds(){
+    drupal_add_css(drupal_get_path('module', 'catalog') .'/css/jquery-ui-1.7.3.custom.css', 'module');
+	drupal_add_css(drupal_get_path('module', 'catalog') .'/css/listGoodsCateg.css', 'module');	
+	$listCat=$_REQUEST['id_cat'];
+	$catGoods=new CatalogGoodsDAO();
+	$arrCatGn=$catGoods->getListTypeGoods();
+	$output='<table width="100%" style="border-collapse: separate;">';	
+	$arrCatG=array();	
+	for($y=0;$y<count($listCat);$y++){
+		for($i=0;$i<count($arrCatGn);$i++){
+			if($arrCatGn[$i]->id==$listCat[$y]){
+				$arrCatG[]=$arrCatGn[$i];
+			}
+		}
+	}
+	$i=0;
+	//dpm($arrCatGn);
+	while ($i < count($arrCatG)) {	    
+		$cg1=$arrCatG[$i];	
+		//dpm($cg1);
+		$cg2=null;
+		if($i+1<count($arrCatG)) $cg2=$arrCatG[$i+1];
+		$i+=2;			
+		$output.='<tr><td width="50%" style="font-size:x-large;"><div class="titleCateg ui-helper-reset ui-state-default ui-corner-all">'.$cg1->value.'</div></td><td width="50%" style="font-size:x-large;">'.(($cg2->listTypeGoods)?('<div class="titleCateg ui-helper-reset ui-state-default ui-corner-all">'.$cg2->value.'</div>'):'').'</td></tr>';
+		$output.='<tr><td width="50%" style="vertical-align:top;" >';
+		
+		for($y=0;$y<count($cg1->listTypeGoods);$y++){
+			//dpm($cg1.listTypeGoods);
+			$output.='<div class="nR texMin"><div><a href="listGoods?id_Catal[]='.$cg1->listTypeGoods[$y]->id.'">'.$cg1->listTypeGoods[$y]->value.'</a></div></div>';
+		}
+		$output.='</td><td width="50%" style="vertical-align:top;">';
+		if($cg2!=null){
+			for($y=0;$y<count($cg2->listTypeGoods);$y++){
+				$output.='<div class="nR texMin"><div><a href="listGoods?id_Catal[]='.$cg2->listTypeGoods[$y]->id.'">'.$cg2->listTypeGoods[$y]->value.'</a></div></div>';
+			}
+		}
+		$output.='</td></tr><tr><td width="50%" style="font-size:10px;" colspan="2">&nbsp;</td></tr>';
+	}
+	$output.='</table>';
+	//dpm($arrCatG);
+	return $output;
+}
+
+
+function catalog_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op){
+    case 'list':
+    $blocks[0] = array(
+	    'info'       => 'Форма поиска товаров',
+	    'status'     => TRUE,
+        'weight'     => 0,
+        'visibility' => 1,
+        'pages'      => 'catalog/listGoods',
+		'region'     => 'right',
+	);
+	$blocks[1] = array(
+	    'info'       => 'Форма показа продовцов крнкретного товара',
+	    'status'     => TRUE,
+        'weight'     => 0,
+        'visibility' => 1,
+        'pages'      => 'catalog/concretGoods/*',
+		'region'     => 'right',
+	);
+	$blocks[2] = array(
+	    'info'       => 'Кабинет пользователя',
+	    'status'     => TRUE,
+        'weight'     => 0,
+        'visibility' => 1,
+		'region'     => 'header',
+	);
+	$blocks[3] = array(
+	    'info'       => 'Каталог',
+	    'status'     => TRUE,
+        'weight'     => 0,
+        'visibility' => 1,
+		'region'     => 'leftContent',
+	);
+	$blocks[4] = array(
+	    'info'       => 'Панель управления каталогом',
+	    'status'     => TRUE,
+        'weight'     => 0,
+        'visibility' => 1,
+		'region'     => 'leftContent',
+	);
+    return $blocks;
+    case 'view':	   
+	    switch ($delta) {
+			case 0: $block = array('content' => catalog_contents(1),); return $block;
+			case 1: $block = array('content' => catalog_contents(2),); return $block;  
+            case 2: $block = array('content' => getUserRoom(),); return $block;	
+            case 3: $block['subject'] = t('Каталог');
+                    $block['content'] = catalog_getCatalogListGoods();
+                  	return $block;	
+            case 4: $block['subject'] = t('Управление каталогом');
+                    $block['content'] = catalog_getPanelService();
+                  	return $block;						
+		};        
+  }
+}
+
+function catalog_contents($which_block) {
+  switch ($which_block) {
+    case 1: return variable_get('catalog_critSearch',  t('A default value.'));
+	case 2: return variable_get('catalog_concretGoods',  t('Нет в продаже.'));		
+  }
+}
+
+function catalog_getCatalogListGoods(){
+    $catGoods=new CatalogGoodsDAO();
+	$arrCatG=$catGoods->getListTypeGoods();
+	$output='<div class="catalogList">';	
+	for($i=0;$i<count($arrCatG);$i++){
+	    $cg=$arrCatG[$i];
+		$output.='<h3>'.$cg->value.'</h3>';
+		$output.='<div>';
+		for($y=0;$y<count($cg->listTypeGoods);$y++){			
+			$output.='<div><div class="oneCell"><a href="catalog/listGoods?id_Catal[]='.$cg->listTypeGoods[$y]->id.'">'.$cg->listTypeGoods[$y]->value.'</a></div><div class="twoCell"><a href="catalog/listGoodsFull?id_Catal[]='.$cg->listTypeGoods[$y]->id.'" title="Все товары">...</a></div></div>';
+		}
+		$output.='</div>';
+	}	
+	$output.='</div>';
+	//dpm($arrCatG);
+	$output.='<style>.oneCell {display: table-cell;width: 200px;}.twoCell {display: table-cell;width: 20px;}</style>';
+	$output.='<script>$(".catalogList").accordion({
+			autoHeight: false,
+			navigation: true
+		});</script>';
+	return $output;
+}
+
+function catalog_getPanelService(){
+    $output='<div class=""><div><a href="/catalog/admin/controlCatalog">Панель управления</a></div><div><a href="/catalog/admin/redactGoods/12/12">Изменение товара</a></div><div><a href="/catalog/shopsGoods">Управление магазинов</a></div></div>';
+	return $output;
+}
+
+function getUserRoom(){	
+	 return theme('user_room_block');
+	
+}
+
+//http://www.micro-system.org/
+//http://news.yandex.ru/yandsearch?showdups=1&catnews=4&rpt=nnews2&within=7
+//http://zoom.cnews.ru
+//http://texnomaniya.ru/
+
+
+
+
+	
+

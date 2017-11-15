@@ -1,0 +1,7 @@
+; $Id$
+
+name = MyMod
+description = Модуль скрывает в формах лишнюю информацию
+package = MyModul
+version = VERSION
+core = 6.x

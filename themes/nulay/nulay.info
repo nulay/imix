@@ -1,0 +1,25 @@
+; $Id: nulay.info,v 1.4 2011/03/15 05:50:57 dries Exp $
+name = Nulay
+description = Table-based multi-column theme with a marine and ash color scheme.
+version = VERSION
+core = 6.x
+engine = phptemplate
+
+;regions
+regions[head] = Head
+regions[header] = Header
+regions[top_menu] = Top menu
+regions[left] = Left sidebar
+regions[right] = Right Sidebar
+regions[content] = Content
+regions[footer] = Footer
+regions[firstb] = First region
+regions[secondb] = Second region
+regions[thirdb] = Third region
+regions[leftcontbl] = leftcontbl
+
+; Information added by drupal.org packaging script on 2012-03-15
+version = "6.20"
+project = "drupal"
+datestamp = "1292447788"
+

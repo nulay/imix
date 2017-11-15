@@ -1,0 +1,7 @@
+
+RewriteEngine on
+
+RewriteCond %{HTTP_HOST} ^photo\.imix\.by$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.photo\.imix\.by$
+RewriteRule ^/?$ "http\:\/\/photo\.imix\.by\/index\.php" [R=301,L]
+

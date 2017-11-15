@@ -1,0 +1,70 @@
+.goodsContent{
+}
+.headerGoods{
+     border-bottom:1px solid gray;
+	 padding:10px 0 10px 0;
+}
+.nameGoods{
+     color:red;
+	 font-size:20px;
+	 font-weight: bold;
+}
+.priceG{
+     font-weight: bold;
+}
+.propertyGoods{
+}
+.onePrG{
+   
+}
+.namePrG{     
+	 width:20%;
+	 background-color: #eeeccc;
+	 padding:4px;
+	 font-weight: bold;
+	 color:#4a4a4a;
+}
+.valuePrG{
+    
+	}
+.onePrG div{
+   padding:3px 10px 3px 10px;
+}
+
+.goodsContent table{
+    border-collapse: separate;
+}
+
+.contItGtext{
+    padding:15px; 
+    vertical-align: middle; 
+}
+.contItG{
+border-bottom:1px solid #E18638;
+}
+.contItGIm{
+   padding:8px;
+   text-align: center;
+}
+.goodsContent .imageblock{
+	   border-right: 1px solid gray;
+       padding: 5px;
+	   vertical-align: top;
+   }
+   
+   .scroller {
+	   overflow-x: hidden;
+       overflow-y: auto;	   
+	   height: 100px;
+	   text-align: center;
+   }
+   .scpollerInner{	        
+		width:120px;
+		padding:4px;
+   }
+   .namePrRootG{
+	   background-color: #DFE9BF;
+       color: #000;
+       font-weight: bold;
+       padding: 4px 0 4px 20px;       
+   }

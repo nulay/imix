@@ -1,0 +1,50 @@
+var objProv={
+   posWinned:4000,
+   pageWin:0,
+   numElWin:0, 
+   curentPage:0,
+   curentTime:0, 
+   init:function(){     
+       var s=document.location.search;     
+       //$('body').prepend('<div>Номер позиции : <input id="numPos34" type="text" value="0"/><button>Начать просмотр</button></div>');  
+       this.curentPage=s.substr(s.indexOf('=')+1,s.length)-0;
+       this.pageWin=Math.floor(this.posWinned/21)+1;
+       this.numElWin=this.posWinned-(this.pageWin-1)*21;
+       this.searchLastWinnPage();
+   },   
+   searchLastWinnPage:function(){       
+       if(this.pageWin==this.curentPage){
+           this.warningStart();
+           return;
+       }
+       var cop=0;
+       if(this.pageWin-this.curentPage<3){
+           cop=600000-(this.pageWin-this.curentPage)*60000;           
+       }
+       this.curentTime=600000-cop;
+       $('body').prepend('<div>Призовая страница : '+this.pageWin+' </div><div>Осталось ~'+((this.pageWin-this.curentPage)*21)+' до выигрыша</div><div>До перезагрузки : <span id="tmdfg">'+(600000-cop)/60/1000+'</span> минут</div>');  
+       
+       if($('p.user-result:first').text().indexOf('10')>0){   
+           if($('p.user-result:last').text().indexOf('10')>0){
+              this.loadPage(this.curentPage+1);
+           }           
+       }
+       var thisEl=this;
+       window.setTimeout(function(){thisEl.loadPage(thisEl.curentPage)},600000-cop);
+       window.setInterval(function(){thisEl.curentTime=thisEl.curentTime-60000; $('#tmdfg').text(thisEl.curentTime/60/1000);},60000); 
+    },
+    warningStart:function(){
+       $('body').append('<div>Осталось '+(this.numElWin-this.searthElTen())+' до выигрыша</div>');
+       var thisEl=this;
+       window.setTimeout(function(){thisEl.loadPage(thisEl.curentPage)},1000);
+    },   
+    searthElTen:function(){
+        var numZ=0;
+        $('p.user-result').each(function(num,el){if(numZ==0 && $(el).text().indexOf('9')>0){numZ=num;}});
+        return numZ+1;                                         
+    },
+    loadPage:function(numPage){
+         document.location=document.location.protocol+"//"+document.location.hostname+document.location.pathname+"?qpage="+numPage;
+    }
+}
+objProv.init();
