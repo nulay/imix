@@ -89,7 +89,7 @@
  *   $db_url = 'pgsql://username:password@localhost/databasename';
  */
 # $db_url = 'mysqli://root@localhost/latinoby_imix';
-$db_url = 'mysqli://latinoby_imix:nulay787871@localhost/latinoby_imix';
+$db_url = 'mysql://latinoby_imix:nulay787871@localhost/latinoby_imix';
 $db_prefix = '';
 
 /**
